@@ -30,6 +30,7 @@
         {
             this.bStartServer = new System.Windows.Forms.Button();
             this.console = new System.Windows.Forms.TextBox();
+            this.bStopServer = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // bStartServer
@@ -51,11 +52,22 @@
             this.console.TabIndex = 1;
             this.console.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
             // 
+            // bStopServer
+            // 
+            this.bStopServer.Location = new System.Drawing.Point(572, 163);
+            this.bStopServer.Name = "bStopServer";
+            this.bStopServer.Size = new System.Drawing.Size(216, 76);
+            this.bStopServer.TabIndex = 2;
+            this.bStopServer.Text = "Stop Server";
+            this.bStopServer.UseVisualStyleBackColor = true;
+            this.bStopServer.Click += new System.EventHandler(this.bStopServer_Click);
+            // 
             // Server
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.bStopServer);
             this.Controls.Add(this.console);
             this.Controls.Add(this.bStartServer);
             this.Name = "Server";
@@ -69,5 +81,6 @@
 
         private System.Windows.Forms.Button bStartServer;
         private System.Windows.Forms.TextBox console;
+        private System.Windows.Forms.Button bStopServer;
     }
 }
