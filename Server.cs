@@ -13,21 +13,23 @@ using System.Runtime.CompilerServices;
 
 namespace tcpServer
 {
+    public class User
+    {
+       
+        public Socket socket;
+        public string username;
+        public string password;
+    }
+
     public partial class Server : Form
     {
         private static readonly Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         private static readonly List<Socket> clientSockets = new List<Socket>();
+        private static readonly List<User> users = new List<User>();
         private const int BUFFER_SIZE = 2048;
         private const int PORT = 100;
         private static readonly byte[] buffer = new byte[BUFFER_SIZE];
 
-        //static void Main()
-        //{
-        //    Console.Title = "Server";
-        //    SetupServer();
-        //    Console.ReadLine(); // When we press enter close everything
-        //    CloseAllSockets();
-        //}
 
         private static void SetupServer()
         {
@@ -94,6 +96,20 @@ namespace tcpServer
             Array.Copy(buffer, recBuf, received);
             string text = Encoding.ASCII.GetString(recBuf);
             updateUI("Received Text: " + text);
+
+            if (text.StartsWith("REG"))
+            {
+                updateUI("A user wants to register");
+                User user = new User();
+                user.username = text.Split(' ')[1];
+                user.password = text.Split(' ')[2];
+                users.Add(user);
+                byte[] data = Encoding.ASCII.GetBytes("successful registered!");
+                current.Send(data);
+            }
+                
+            
+
 
             if (text.ToLower() == "get time") // Client requested time
             {
