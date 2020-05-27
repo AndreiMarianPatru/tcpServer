@@ -8,6 +8,7 @@ namespace tcpServer
 {
     static class Program
     {
+        public static Server form1;
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
@@ -16,7 +17,7 @@ namespace tcpServer
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Server());
+            Application.Run(form1 = new Server());
 
             
         }

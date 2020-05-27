@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Net;
 using System.Net.Sockets;
-
+using System.Runtime.CompilerServices;
 
 namespace tcpServer
 {
@@ -20,7 +20,16 @@ namespace tcpServer
         private const int BUFFER_SIZE = 2048;
         private const int PORT = 100;
         private static readonly byte[] buffer = new byte[BUFFER_SIZE];
-        private  void SetupServer()
+
+        //static void Main()
+        //{
+        //    Console.Title = "Server";
+        //    SetupServer();
+        //    Console.ReadLine(); // When we press enter close everything
+        //    CloseAllSockets();
+        //}
+
+        private static void SetupServer()
         {
             updateUI("Setting up server...");
             serverSocket.Bind(new IPEndPoint(IPAddress.Any, PORT));
@@ -28,7 +37,12 @@ namespace tcpServer
             serverSocket.BeginAccept(AcceptCallback, null);
             updateUI("Server setup complete");
         }
-        private void CloseAllSockets()
+
+        /// <summary>
+        /// Close all connected client (we do not need to shutdown the server socket as its connections
+        /// are already closed with the clients).
+        /// </summary>
+        private static void CloseAllSockets()
         {
             foreach (Socket socket in clientSockets)
             {
@@ -37,9 +51,9 @@ namespace tcpServer
             }
 
             serverSocket.Close();
-            updateUI("The server is now closed");
         }
-        private void AcceptCallback(IAsyncResult AR)
+
+        private static void AcceptCallback(IAsyncResult AR)
         {
             Socket socket;
 
@@ -58,7 +72,7 @@ namespace tcpServer
             serverSocket.BeginAccept(AcceptCallback, null);
         }
 
-        private void ReceiveCallback(IAsyncResult AR)
+        private static void ReceiveCallback(IAsyncResult AR)
         {
             Socket current = (Socket)AR.AsyncState;
             int received;
@@ -102,17 +116,31 @@ namespace tcpServer
                 updateUI("Text is an invalid request");
                 byte[] data = Encoding.ASCII.GetBytes("Invalid request");
                 current.Send(data);
+                
                 updateUI("Warning Sent");
-                console.AppendText("server started");
             }
 
             current.BeginReceive(buffer, 0, BUFFER_SIZE, SocketFlags.None, ReceiveCallback, current);
         }
 
-        private void updateUI(string text)
+
+        public static  bool ControlInvokeRequired(Control c, Action a)
         {
-            console.AppendText(text);
-            console.AppendText(Environment.NewLine);
+            if (c.InvokeRequired) c.Invoke(new MethodInvoker(delegate { a(); }));
+            else return false;
+
+            return true;
+        }
+        private static void updateUI(string text)
+        {
+            //Check if invoke requied if so return - as i will be recalled in correct thread
+            if (ControlInvokeRequired(Program.form1.tchat, () => updateUI(text))) return;
+            
+            Program.form1.tchat.AppendText(text);
+
+            Program.form1.tchat.AppendText(Environment.NewLine);
+         
+
         }
         public Server()
         {
@@ -133,6 +161,13 @@ namespace tcpServer
         private void bStopServer_Click(object sender, EventArgs e)
         {
             CloseAllSockets();
+            this.Hide();
+            this.Close();
+        }
+
+        private void tchat_TextChanged(object sender, EventArgs e)
+        {
+            
         }
     }
 }
