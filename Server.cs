@@ -13,13 +13,7 @@ using System.Runtime.CompilerServices;
 
 namespace tcpServer
 {
-    public class User
-    {
-       
-        public Socket socket;
-        public string username;
-        public string password;
-    }
+ 
 
     public partial class Server : Form
     {
@@ -107,11 +101,45 @@ namespace tcpServer
                 byte[] data = Encoding.ASCII.GetBytes("successful registered!");
                 current.Send(data);
             }
+            else if (text.StartsWith("LOG"))
+            {
                 
-            
+
+                
+                updateUI("A user wants to login");
+                updateUI("The username tried " + text.Split(' ')[1]);
+                updateUI("The password tried " + text.Split(' ')[2]);
+                foreach (User user in users)
+                {
+                    if(user.username== text.Split(' ')[1])
+                    {
+                        updateUI("user found!");
+                        byte[] data1 = Encoding.ASCII.GetBytes("user found!");
+                        current.Send(data1);
+                        if(user.password == text.Split(' ')[2])
+                        {
+                            updateUI("Correct password! Successful login!");
+                            byte[] data2 = Encoding.ASCII.GetBytes("Correct password! Successful login!");
+                            current.Send(data2);
+                            user.loggedIn = true;
 
 
-            if (text.ToLower() == "get time") // Client requested time
+                        }
+                        else
+                        {
+                            updateUI("Wrong password! Try again!");
+                            byte[] data3 = Encoding.ASCII.GetBytes("Wrong password! Try again!");
+                            current.Send(data3);
+                        }
+                    }
+                }
+                //user.username = text.Split(' ')[1];
+               // user.password = text.Split(' ')[2];
+               // users.Add(user);
+                //byte[] data = Encoding.ASCII.GetBytes("successful registered!");
+               // current.Send(data);
+            }
+            else if (text.ToLower() == "get time") // Client requested time
             {
                 updateUI("Text is a get time request");
                 byte[] data = Encoding.ASCII.GetBytes(DateTime.Now.ToLongTimeString());
@@ -185,5 +213,59 @@ namespace tcpServer
         {
             
         }
+
+        private void bSend_Click(object sender, EventArgs e)
+        {
+            string input = mConsole.Text;
+            if(input=="start server")
+            {
+                updateUI("Setting up server...");
+                serverSocket.Bind(new IPEndPoint(IPAddress.Any, PORT));
+                serverSocket.Listen(0);
+                serverSocket.BeginAccept(AcceptCallback, null);
+                updateUI("Server setup complete");
+            }
+            else if(input == "stop server")
+            {
+                CloseAllSockets();
+                this.Hide();
+                this.Close();
+            }
+            else if(input=="list users")
+            {
+                if(users.Count==0)
+                {
+                    updateUI("There are no users yet!");
+                }
+                else
+                {
+                    foreach(User user in users)
+                    {
+                        
+                        updateUI(user.username);
+                        updateUI(user.password);
+                        updateUI(user.loggedIn.ToString());
+                        updateUI("");
+                    }
+                }
+            }
+        }
+
+        private void bStartServer_Click(object sender, EventArgs e)
+        {
+            updateUI("Setting up server...");
+            serverSocket.Bind(new IPEndPoint(IPAddress.Any, PORT));
+            serverSocket.Listen(0);
+            serverSocket.BeginAccept(AcceptCallback, null);
+            updateUI("Server setup complete");
+        }
+    }
+    public class User
+    {
+
+        public Socket socket;
+        public string username;
+        public string password;
+        public bool loggedIn;
     }
 }

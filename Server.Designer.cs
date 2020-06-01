@@ -28,50 +28,58 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.bStartServer = new System.Windows.Forms.Button();
-            this.bStopServer = new System.Windows.Forms.Button();
             this.tchat = new System.Windows.Forms.TextBox();
+            this.mConsole = new System.Windows.Forms.TextBox();
+            this.bSend = new System.Windows.Forms.Button();
+            this.bStartServer = new System.Windows.Forms.Button();
             this.SuspendLayout();
-            // 
-            // bStartServer
-            // 
-            this.bStartServer.Location = new System.Drawing.Point(858, 57);
-            this.bStartServer.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.bStartServer.Name = "bStartServer";
-            this.bStartServer.Size = new System.Drawing.Size(324, 118);
-            this.bStartServer.TabIndex = 0;
-            this.bStartServer.Text = "Start Server";
-            this.bStartServer.UseVisualStyleBackColor = true;
-            this.bStartServer.Click += new System.EventHandler(this.button1_Click);
-            // 
-            // bStopServer
-            // 
-            this.bStopServer.Location = new System.Drawing.Point(858, 251);
-            this.bStopServer.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.bStopServer.Name = "bStopServer";
-            this.bStopServer.Size = new System.Drawing.Size(324, 117);
-            this.bStopServer.TabIndex = 2;
-            this.bStopServer.Text = "Stop Server";
-            this.bStopServer.UseVisualStyleBackColor = true;
-            this.bStopServer.Click += new System.EventHandler(this.bStopServer_Click);
             // 
             // tchat
             // 
             this.tchat.Location = new System.Drawing.Point(58, 43);
             this.tchat.Multiline = true;
             this.tchat.Name = "tchat";
-            this.tchat.Size = new System.Drawing.Size(739, 614);
+            this.tchat.Size = new System.Drawing.Size(739, 525);
             this.tchat.TabIndex = 3;
             this.tchat.TextChanged += new System.EventHandler(this.tchat_TextChanged);
+            // 
+            // mConsole
+            // 
+            this.mConsole.Location = new System.Drawing.Point(58, 589);
+            this.mConsole.Multiline = true;
+            this.mConsole.Name = "mConsole";
+            this.mConsole.Size = new System.Drawing.Size(739, 71);
+            this.mConsole.TabIndex = 4;
+            // 
+            // bSend
+            // 
+            this.bSend.Location = new System.Drawing.Point(858, 589);
+            this.bSend.Name = "bSend";
+            this.bSend.Size = new System.Drawing.Size(324, 71);
+            this.bSend.TabIndex = 5;
+            this.bSend.Text = "Send!";
+            this.bSend.UseVisualStyleBackColor = true;
+            this.bSend.Click += new System.EventHandler(this.bSend_Click);
+            // 
+            // bStartServer
+            // 
+            this.bStartServer.Location = new System.Drawing.Point(858, 43);
+            this.bStartServer.Name = "bStartServer";
+            this.bStartServer.Size = new System.Drawing.Size(300, 64);
+            this.bStartServer.TabIndex = 6;
+            this.bStartServer.Text = "Start Server";
+            this.bStartServer.UseVisualStyleBackColor = true;
+            this.bStartServer.Click += new System.EventHandler(this.bStartServer_Click);
             // 
             // Server
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1200, 692);
-            this.Controls.Add(this.tchat);
-            this.Controls.Add(this.bStopServer);
             this.Controls.Add(this.bStartServer);
+            this.Controls.Add(this.bSend);
+            this.Controls.Add(this.mConsole);
+            this.Controls.Add(this.tchat);
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "Server";
             this.Text = "Server";
@@ -81,9 +89,9 @@
         }
 
         #endregion
-
-        private System.Windows.Forms.Button bStartServer;
-        private System.Windows.Forms.Button bStopServer;
         public System.Windows.Forms.TextBox tchat;
+        private System.Windows.Forms.TextBox mConsole;
+        private System.Windows.Forms.Button bSend;
+        private System.Windows.Forms.Button bStartServer;
     }
 }
