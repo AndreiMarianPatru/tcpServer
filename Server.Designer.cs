@@ -39,6 +39,7 @@
             this.tchat.Location = new System.Drawing.Point(58, 43);
             this.tchat.Multiline = true;
             this.tchat.Name = "tchat";
+            this.tchat.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.tchat.Size = new System.Drawing.Size(739, 525);
             this.tchat.TabIndex = 3;
             this.tchat.TextChanged += new System.EventHandler(this.tchat_TextChanged);

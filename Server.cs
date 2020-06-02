@@ -1,19 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.CompilerServices;
+using System.Text;
+using System.Windows.Forms;
 
 namespace tcpServer
 {
- 
+
 
     public partial class Server : Form
     {
@@ -94,26 +90,16 @@ namespace tcpServer
             if (text.ToLower().StartsWith("reg"))
             {
                 bool flag = false;
-                updateUI("1");
                 string[] input = text.Split(' ');
-                updateUI("2");
-
-                if (input.Count()==3&&text.Split(' ')[1]!=""&& text.Split(' ')[2]!="")
+                if (input.Count() == 3 && text.Split(' ')[1] != "" && text.Split(' ')[2] != "")
                 {
-                    updateUI("3");
-
                     if (users.Count != 0)
                     {
-                        updateUI("4");
-
                         foreach (User user1 in users)
                         {
-                            updateUI("5");
-
-                            if (text.Split(' ')[1]==user1.username)
+                            if (text.Split(' ')[1] == user1.username)
                             {
-                                updateUI("6");
-                                flag=true;                                                          
+                                flag = true;
                             }
                         }
                     }
@@ -132,24 +118,25 @@ namespace tcpServer
                         byte[] data = Encoding.ASCII.GetBytes("Account created successfully! Welcome " + user.username + "! Please Log In now!");
                         current.Send(data);
                     }
-                   
+
                 }
                 else
                 {
                     byte[] data = Encoding.ASCII.GetBytes("There is a problem with the input provided. Please try again!");
                     current.Send(data);
                 }
-               
+
             }
             else if (text.ToLower().StartsWith("log"))
             {
-                
 
-                
+
+                bool logflag=false;
+                User loguser= new User();
                 updateUI("A user wants to login");
                 updateUI("The username tried " + text.Split(' ')[1]);
                 updateUI("The password tried " + text.Split(' ')[2]);
-                if(users.Count==0)
+                if (users.Count == 0)
                 {
                     byte[] data0 = Encoding.ASCII.GetBytes("No users registered yet! Type HELP for available commands!");
                     current.Send(data0);
@@ -160,28 +147,36 @@ namespace tcpServer
                     {
                         if (user.username == text.Split(' ')[1])
                         {
-                           
-                            updateUI("user found!");
-                            byte[] data1 = Encoding.ASCII.GetBytes("user found!");
-                            current.Send(data1);
-                            if (user.password == text.Split(' ')[2])
-                            {
-                                updateUI("Correct password! Successful login!");
-                                byte[] data2 = Encoding.ASCII.GetBytes("Correct password! Successful login!");
-                                current.Send(data2);
-                                user.loggedIn = true;
-
-
-                            }
-                            else
-                            {
-                                updateUI("Wrong password! Try again!");
-                                byte[] data3 = Encoding.ASCII.GetBytes("Wrong password! Try again!");
-                                current.Send(data3);
-                            }
+                            logflag = true;
+                            loguser = user;
                         }
                     }
+                    if (logflag)
+                    {
+                        updateUI("user found!");
+                        if (loguser.password == text.Split(' ')[2])
+                        {
+                            updateUI("Correct password! Successful login!");
+                            byte[] data2 = Encoding.ASCII.GetBytes("Log in successful! Welcome " + loguser.username + "!");
+                            current.Send(data2);
+                            loguser.loggedIn = true;
 
+
+                        }
+                        else
+                        {
+                            updateUI("Wrong password!");
+                            byte[] data3 = Encoding.ASCII.GetBytes("Wrong password! Try again!");
+                            current.Send(data3);
+                        }
+                    }
+                    else
+                    {
+                        updateUI("User not found");
+                        byte[] data4 = Encoding.ASCII.GetBytes("There is no user registered with this username. Please try again or register new user");
+                        current.Send(data4);
+                    }
+                   
                     //user.username = text.Split(' ')[1];
                     // user.password = text.Split(' ')[2];
                     // users.Add(user);
@@ -211,7 +206,7 @@ namespace tcpServer
                 updateUI("Text is an invalid request");
                 byte[] data = Encoding.ASCII.GetBytes("Invalid request");
                 current.Send(data);
-                
+
                 updateUI("Warning Sent");
             }
 
@@ -219,7 +214,7 @@ namespace tcpServer
         }
 
 
-        public static  bool ControlInvokeRequired(Control c, Action a)
+        public static bool ControlInvokeRequired(Control c, Action a)
         {
             if (c.InvokeRequired) c.Invoke(new MethodInvoker(delegate { a(); }));
             else return false;
@@ -230,11 +225,11 @@ namespace tcpServer
         {
             //Check if invoke requied if so return - as i will be recalled in correct thread
             if (ControlInvokeRequired(Program.form1.tchat, () => updateUI(text))) return;
-            
+
             Program.form1.tchat.AppendText(text);
 
             Program.form1.tchat.AppendText(Environment.NewLine);
-         
+
 
         }
         public Server()
@@ -245,7 +240,7 @@ namespace tcpServer
         private void button1_Click(object sender, EventArgs e)
         {
             SetupServer();
-            
+
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)
@@ -262,13 +257,13 @@ namespace tcpServer
 
         private void tchat_TextChanged(object sender, EventArgs e)
         {
-            
+
         }
 
         private void bSend_Click(object sender, EventArgs e)
         {
             string input = mConsole.Text;
-            if(input=="start server")
+            if (input == "start server")
             {
                 updateUI("Setting up server...");
                 serverSocket.Bind(new IPEndPoint(IPAddress.Any, PORT));
@@ -276,23 +271,23 @@ namespace tcpServer
                 serverSocket.BeginAccept(AcceptCallback, null);
                 updateUI("Server setup complete");
             }
-            else if(input == "stop server")
+            else if (input == "stop server")
             {
                 CloseAllSockets();
                 this.Hide();
                 this.Close();
             }
-            else if(input=="list users")
+            else if (input == "list users")
             {
-                if(users.Count==0)
+                if (users.Count == 0)
                 {
                     updateUI("There are no users yet!");
                 }
                 else
                 {
-                    foreach(User user in users)
+                    foreach (User user in users)
                     {
-                        
+
                         updateUI(user.username);
                         updateUI(user.password);
                         updateUI(user.loggedIn.ToString());
