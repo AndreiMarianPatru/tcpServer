@@ -20,7 +20,7 @@ namespace tcpServer
         private static readonly Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         private static readonly List<Socket> clientSockets = new List<Socket>();
         private static readonly List<User> users = new List<User>();
-        private const int BUFFER_SIZE = 2048;
+        private const int BUFFER_SIZE = 20480;
         private const int PORT = 100;
         private static readonly byte[] buffer = new byte[BUFFER_SIZE];
 
@@ -91,17 +91,57 @@ namespace tcpServer
             string text = Encoding.ASCII.GetString(recBuf);
             updateUI("Received Text: " + text);
 
-            if (text.StartsWith("REG"))
+            if (text.ToLower().StartsWith("reg"))
             {
-                updateUI("A user wants to register");
-                User user = new User();
-                user.username = text.Split(' ')[1];
-                user.password = text.Split(' ')[2];
-                users.Add(user);
-                byte[] data = Encoding.ASCII.GetBytes("successful registered!");
-                current.Send(data);
+                bool flag = false;
+                updateUI("1");
+                string[] input = text.Split(' ');
+                updateUI("2");
+
+                if (input.Count()==3&&text.Split(' ')[1]!=""&& text.Split(' ')[2]!="")
+                {
+                    updateUI("3");
+
+                    if (users.Count != 0)
+                    {
+                        updateUI("4");
+
+                        foreach (User user1 in users)
+                        {
+                            updateUI("5");
+
+                            if (text.Split(' ')[1]==user1.username)
+                            {
+                                updateUI("6");
+                                flag=true;                                                          
+                            }
+                        }
+                    }
+                    if (flag == true)
+                    {
+                        byte[] data1 = Encoding.ASCII.GetBytes("This username is already taken, please change it");
+                        current.Send(data1);
+                    }
+                    else
+                    {
+                        updateUI("A user wants to register");
+                        User user = new User();
+                        user.username = text.Split(' ')[1];
+                        user.password = text.Split(' ')[2];
+                        users.Add(user);
+                        byte[] data = Encoding.ASCII.GetBytes("Account created successfully! Welcome " + user.username + "! Please Log In now!");
+                        current.Send(data);
+                    }
+                   
+                }
+                else
+                {
+                    byte[] data = Encoding.ASCII.GetBytes("There is a problem with the input provided. Please try again!");
+                    current.Send(data);
+                }
+               
             }
-            else if (text.StartsWith("LOG"))
+            else if (text.ToLower().StartsWith("log"))
             {
                 
 
@@ -109,35 +149,46 @@ namespace tcpServer
                 updateUI("A user wants to login");
                 updateUI("The username tried " + text.Split(' ')[1]);
                 updateUI("The password tried " + text.Split(' ')[2]);
-                foreach (User user in users)
+                if(users.Count==0)
                 {
-                    if(user.username== text.Split(' ')[1])
+                    byte[] data0 = Encoding.ASCII.GetBytes("No users registered yet! Type HELP for available commands!");
+                    current.Send(data0);
+                }
+                else
+                {
+                    foreach (User user in users)
                     {
-                        updateUI("user found!");
-                        byte[] data1 = Encoding.ASCII.GetBytes("user found!");
-                        current.Send(data1);
-                        if(user.password == text.Split(' ')[2])
+                        if (user.username == text.Split(' ')[1])
                         {
-                            updateUI("Correct password! Successful login!");
-                            byte[] data2 = Encoding.ASCII.GetBytes("Correct password! Successful login!");
-                            current.Send(data2);
-                            user.loggedIn = true;
+                           
+                            updateUI("user found!");
+                            byte[] data1 = Encoding.ASCII.GetBytes("user found!");
+                            current.Send(data1);
+                            if (user.password == text.Split(' ')[2])
+                            {
+                                updateUI("Correct password! Successful login!");
+                                byte[] data2 = Encoding.ASCII.GetBytes("Correct password! Successful login!");
+                                current.Send(data2);
+                                user.loggedIn = true;
 
 
-                        }
-                        else
-                        {
-                            updateUI("Wrong password! Try again!");
-                            byte[] data3 = Encoding.ASCII.GetBytes("Wrong password! Try again!");
-                            current.Send(data3);
+                            }
+                            else
+                            {
+                                updateUI("Wrong password! Try again!");
+                                byte[] data3 = Encoding.ASCII.GetBytes("Wrong password! Try again!");
+                                current.Send(data3);
+                            }
                         }
                     }
+
+                    //user.username = text.Split(' ')[1];
+                    // user.password = text.Split(' ')[2];
+                    // users.Add(user);
+                    //byte[] data = Encoding.ASCII.GetBytes("successful registered!");
+                    // current.Send(data);
                 }
-                //user.username = text.Split(' ')[1];
-               // user.password = text.Split(' ')[2];
-               // users.Add(user);
-                //byte[] data = Encoding.ASCII.GetBytes("successful registered!");
-               // current.Send(data);
+
             }
             else if (text.ToLower() == "get time") // Client requested time
             {
