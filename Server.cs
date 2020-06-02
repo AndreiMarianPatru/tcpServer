@@ -1,4 +1,6 @@
-﻿using System;
+﻿using DocumentFormat.OpenXml.Office2010.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -15,8 +17,9 @@ namespace tcpServer
     {
         private static readonly Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         private static readonly List<Socket> clientSockets = new List<Socket>();
-        private static readonly List<User> users = new List<User>();
-        private const int BUFFER_SIZE = 20480;
+        private static  List<User> users = new List<User>();
+        private static List<Room> rooms = new List<Room>();
+        private const int BUFFER_SIZE = 2048;
         private const int PORT = 100;
         private static readonly byte[] buffer = new byte[BUFFER_SIZE];
 
@@ -176,12 +179,24 @@ namespace tcpServer
                         byte[] data4 = Encoding.ASCII.GetBytes("There is no user registered with this username. Please try again or register new user");
                         current.Send(data4);
                     }
-                   
-                    //user.username = text.Split(' ')[1];
-                    // user.password = text.Split(' ')[2];
-                    // users.Add(user);
-                    //byte[] data = Encoding.ASCII.GetBytes("successful registered!");
-                    // current.Send(data);
+                }
+            }
+            else if (text.ToLower() == "list rooms")
+            {
+                if (rooms.Count == 0)
+                {
+                    byte[] data = Encoding.ASCII.GetBytes("There are no avaiable rooms yet!");
+                    current.Send(data);
+                }
+                else
+                {
+                    foreach (Room room in rooms)
+                    {
+                        byte[] data0 = Encoding.ASCII.GetBytes("Id: " + room.id+ Environment.NewLine + "Name: " + room.name + Environment.NewLine + "Number of users: " + room.Users.Count() + Environment.NewLine);
+                        current.Send(data0);
+                        
+                       
+                    }
                 }
 
             }
@@ -214,7 +229,7 @@ namespace tcpServer
         }
 
 
-        public static bool ControlInvokeRequired(Control c, Action a)
+        public static bool ControlInvokeRequired(System.Windows.Forms.Control c, Action a)
         {
             if (c.InvokeRequired) c.Invoke(new MethodInvoker(delegate { a(); }));
             else return false;
@@ -295,6 +310,55 @@ namespace tcpServer
                     }
                 }
             }
+            else if(input==" list rooms")
+            {
+                if (rooms.Count == 0)
+                {
+                    updateUI("There are no rooms yet!");
+                }
+                else
+                {
+                    foreach (Room room in rooms)
+                    {
+
+                        updateUI("id "+room.id);
+                        updateUI("name "+room.name);
+                        updateUI("number of users "+room.Users.Count());
+                        updateUI("");
+                    }
+                }
+            }
+            else if(input.ToLower().Split(' ')[0]=="createroom")
+            {
+                Room room = new Room();
+                try
+                {
+                    int id = Int32.Parse(input.ToLower().Split(' ')[1]);
+                    if (rooms.Count > 0)
+                    {
+                        foreach(Room tmproom in rooms)
+                        {
+                            if (tmproom.id == id)
+                            {
+                                updateUI("A room with this id already exists! Try a different id!");
+                                return;
+                            }
+                        }
+                    }
+                    room.id = id;
+                }
+                catch (FormatException)
+                {
+                    updateUI("Try another ID");
+                }
+                room.name = input.ToLower().Split(' ')[2];
+                rooms.Add(room);
+                updateUI("room " + room.name + " with id " + room.id + " was created!");
+            }
+            else
+            {
+                updateUI("Wong input! Try again");
+            }
         }
 
         private void bStartServer_Click(object sender, EventArgs e)
@@ -313,5 +377,11 @@ namespace tcpServer
         public string username;
         public string password;
         public bool loggedIn;
+    }
+    public class Room
+    {
+        public int id;
+        public string name;
+        public List<User> Users= new List<User>();
     }
 }
