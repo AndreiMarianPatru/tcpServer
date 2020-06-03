@@ -1,8 +1,6 @@
-﻿using DocumentFormat.OpenXml.Office2010.Excel;
-using DocumentFormat.OpenXml.Spreadsheet;
+﻿using DocumentFormat.OpenXml.Drawing.Charts;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -17,7 +15,7 @@ namespace tcpServer
     {
         private static readonly Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         private static readonly List<Socket> clientSockets = new List<Socket>();
-        private static  List<User> users = new List<User>();
+        private static List<User> users = new List<User>();
         private static List<Room> rooms = new List<Room>();
         private const int BUFFER_SIZE = 2048;
         private const int PORT = 100;
@@ -117,6 +115,7 @@ namespace tcpServer
                         User user = new User();
                         user.username = text.Split(' ')[1];
                         user.password = text.Split(' ')[2];
+                        user.socket=current;
                         users.Add(user);
                         byte[] data = Encoding.ASCII.GetBytes("Account created successfully! Welcome " + user.username + "! Please Log In now!");
                         current.Send(data);
@@ -134,8 +133,8 @@ namespace tcpServer
             {
 
 
-                bool logflag=false;
-                User loguser= new User();
+                bool logflag = false;
+                User loguser = new User();
                 updateUI("A user wants to login");
                 updateUI("The username tried " + text.Split(' ')[1]);
                 updateUI("The password tried " + text.Split(' ')[2]);
@@ -192,10 +191,10 @@ namespace tcpServer
                 {
                     foreach (Room room in rooms)
                     {
-                        byte[] data0 = Encoding.ASCII.GetBytes("Id: " + room.id+ Environment.NewLine + "Name: " + room.name + Environment.NewLine + "Number of users: " + room.Users.Count() + Environment.NewLine);
+                        byte[] data0 = Encoding.ASCII.GetBytes("Id: " + room.id + Environment.NewLine + "Name: " + room.name + Environment.NewLine + "Number of users: " + room.Users.Count() + Environment.NewLine);
                         current.Send(data0);
-                        
-                       
+
+
                     }
                 }
 
@@ -203,41 +202,56 @@ namespace tcpServer
             else if (text.ToLower().StartsWith("join_room"))
             {
                 bool flag = false;
-                Room tmproom=new Room();
+                byte[] finaldata;
+
                 try
                 {
+                    Room temproom;
                     int id = Int32.Parse(text.Split(' ')[1]);
-                    foreach(Room room in rooms)
+                    temproom = rooms.Find(x => x.id == id);
+                    byte[] data0 = Encoding.ASCII.GetBytes("Valid input ID, searching for a room with this ID "+Environment.NewLine);
+                    finaldata=data0;
+                   
+                                
+                    if (temproom == null)
                     {
-                        if (room.id == id)
-                        {
-                            flag = true;
-                            tmproom = room;
-                        }
+                        updateUI("1");
+                        byte[] data1 = Encoding.ASCII.GetBytes("There is no room with this id!");
+                        finaldata=data0.Concat(data1).ToArray();
+                        
                     }
-                    
+                    else
+                    {
+                        updateUI("2");
+
+                        foreach (User user in users)
+                        {
+                            updateUI("3");
+
+                            if (user.socket == current)
+                            {
+                                updateUI("4");
+
+                                temproom.Users.Add(user);
+                                byte[] data2 = Encoding.ASCII.GetBytes("Room joined successful!");
+                                finaldata=data0.Concat(data2).ToArray();
+                             
+
+
+                            }
+                        }
+                       
+                    }
                 }
                 catch (FormatException)
                 {
                     updateUI("Try another ID");
+                    byte[] data3 = Encoding.ASCII.GetBytes("Wrong input ID!");
+                    finaldata=data3;
+                    
                 }
-                if (flag)
-                {
-                    foreach (User user in users)
-                    {
-                        if (user.socket == current)
-                        {
-                            tmproom.Users.Add(user);
-                            byte[] data0 = Encoding.ASCII.GetBytes("Room joined successful!");
-                            current.Send(data0);
-                        }
-                    }
-                }
-                else
-                {
-                    byte[] data = Encoding.ASCII.GetBytes("There is no room with this id!");
-                    current.Send(data);
-                }
+                current.Send(finaldata);
+
             }
             else if (text.ToLower() == "get time") // Client requested time
             {
@@ -349,7 +363,7 @@ namespace tcpServer
                     }
                 }
             }
-            else if(input==" list rooms")
+            else if (input == "list rooms")
             {
                 if (rooms.Count == 0)
                 {
@@ -360,14 +374,14 @@ namespace tcpServer
                     foreach (Room room in rooms)
                     {
 
-                        updateUI("id "+room.id);
-                        updateUI("name "+room.name);
-                        updateUI("number of users "+room.Users.Count());
+                        updateUI("id " + room.id);
+                        updateUI("name " + room.name);
+                        updateUI("number of users " + room.Users.Count());
                         updateUI("");
                     }
                 }
             }
-            else if(input.ToLower().Split(' ')[0]=="createroom")
+            else if (input.ToLower().Split(' ')[0] == "createroom")
             {
                 Room room = new Room();
                 try
@@ -375,7 +389,7 @@ namespace tcpServer
                     int id = Int32.Parse(input.ToLower().Split(' ')[1]);
                     if (rooms.Count > 0)
                     {
-                        foreach(Room tmproom in rooms)
+                        foreach (Room tmproom in rooms)
                         {
                             if (tmproom.id == id)
                             {
@@ -421,6 +435,6 @@ namespace tcpServer
     {
         public int id;
         public string name;
-        public List<User> Users= new List<User>();
+        public List<User> Users = new List<User>();
     }
 }
