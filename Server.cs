@@ -89,15 +89,15 @@ namespace tcpServer
 
             if (text.ToLower().StartsWith("/reg"))
             {             
-                Register(text,current);
+                Register_C(text,current);
             }
             else if (text.ToLower().StartsWith("/log"))
             {
-                LogIn(text,current);
+                LogIn_C(text,current);
             }
             else if (text.ToLower().StartsWith("/join_room"))
             {
-                JoinRoom(text,current);
+                JoinRoom_C(text,current);
             }
             else if (text.ToLower() == "/list_rooms")
             {
@@ -105,7 +105,7 @@ namespace tcpServer
             }
             else if (text.ToLower() == "/get time") // Client requested time
             {
-               GetTime(text,current);
+               GetTime_C(text,current);
             }
             else if (text.ToLower() == "/exit") // Client wants to exit gracefully
             {
@@ -209,8 +209,8 @@ namespace tcpServer
             serverSocket.BeginAccept(AcceptCallback, null);
             updateUI("Server setup complete");
         }
-
-        private static void LogIn(string text, Socket current)
+        //_C stands for client _S stands for server
+        private static void LogIn_C(string text, Socket current)
         {
             bool logflag = false;
             User loguser = new User();
@@ -259,7 +259,7 @@ namespace tcpServer
                 }
             }
         }
-        private static void JoinRoom(string text,Socket current)
+        private static void JoinRoom_C(string text,Socket current)
         {
             bool flag = false;
                 byte[] finaldata;
@@ -330,7 +330,7 @@ namespace tcpServer
                     }
                 }
         }
-        private static void Register(string text,Socket current)
+        private static void Register_C(string text,Socket current)
         {
              bool flag = false;
                 string[] input = text.Split(' ');
@@ -370,7 +370,7 @@ namespace tcpServer
                     current.Send(data);
                 }
         }
-        private static void GetTime(string text,Socket current)
+        private static void GetTime_C(string text,Socket current)
         {
                 updateUI("Text is a get time request");
                 byte[] data = Encoding.ASCII.GetBytes(DateTime.Now.ToLongTimeString());
