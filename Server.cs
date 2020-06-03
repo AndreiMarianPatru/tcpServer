@@ -200,6 +200,45 @@ namespace tcpServer
                 }
 
             }
+            else if (text.ToLower().StartsWith("join_room"))
+            {
+                bool flag = false;
+                Room tmproom=new Room();
+                try
+                {
+                    int id = Int32.Parse(text.Split(' ')[1]);
+                    foreach(Room room in rooms)
+                    {
+                        if (room.id == id)
+                        {
+                            flag = true;
+                            tmproom = room;
+                        }
+                    }
+                    
+                }
+                catch (FormatException)
+                {
+                    updateUI("Try another ID");
+                }
+                if (flag)
+                {
+                    foreach (User user in users)
+                    {
+                        if (user.socket == current)
+                        {
+                            tmproom.Users.Add(user);
+                            byte[] data0 = Encoding.ASCII.GetBytes("Room joined successful!");
+                            current.Send(data0);
+                        }
+                    }
+                }
+                else
+                {
+                    byte[] data = Encoding.ASCII.GetBytes("There is no room with this id!");
+                    current.Send(data);
+                }
+            }
             else if (text.ToLower() == "get time") // Client requested time
             {
                 updateUI("Text is a get time request");
