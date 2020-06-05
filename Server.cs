@@ -88,33 +88,33 @@ namespace tcpServer
             updateUI("Received Text: " + text);
 
             if (text.ToLower().StartsWith("/reg"))
-            {             
-                Register_C(text,current);
+            {
+                Register_C(text, current);
             }
             else if (text.ToLower().StartsWith("/log"))
             {
-                LogIn_C(text,current);
+                LogIn_C(text, current);
             }
             else if (text.ToLower().StartsWith("/join_room"))
             {
-                JoinRoom_C(text,current);
+                JoinRoom_C(text, current);
             }
             else if (text.ToLower() == "/list_rooms")
             {
-                ListRooms_C(text,current);
+                ListRooms_C(text, current);
             }
             else if (text.ToLower() == "/get time") // Client requested time
             {
-               GetTime_C(text,current);
+                GetTime_C(text, current);
             }
             else if (text.ToLower() == "/exit") // Client wants to exit gracefully
             {
-                Exit_C(text,current);
+                Exit_C(text, current);
                 return;
             }
             else
             {
-                updateUI("Invalid request-> "+text+Environment.NewLine);
+                updateUI("Invalid request-> " + text + Environment.NewLine);
                 byte[] data = Encoding.ASCII.GetBytes("Invalid request");
                 current.Send(data);
                 updateUI("Warning Sent");
@@ -185,7 +185,7 @@ namespace tcpServer
             }
             else if (input == "/list users")
             {
-               ListUsers_S();
+                ListUsers_S();
             }
             else if (input == "/list rooms")
             {
@@ -193,7 +193,7 @@ namespace tcpServer
             }
             else if (input.ToLower().Split(' ')[0] == "/createroom")
             {
-               CreateRoom_S(input);
+                CreateRoom_S(input);
             }
             else
             {
@@ -228,8 +228,18 @@ namespace tcpServer
                 {
                     if (user.username == text.Split(' ')[1])
                     {
-                        logflag = true;
-                        loguser = user;
+                        if (user.loggedIn == true)
+                        {
+                            byte[] data2 = Encoding.ASCII.GetBytes("You are already logged!");
+                            current.Send(data2);
+                            return;
+                        }
+                        else
+                        {
+                            logflag = true;
+                            loguser = user;
+                        }
+
                     }
                 }
                 if (logflag)
@@ -259,205 +269,227 @@ namespace tcpServer
                 }
             }
         }
-        private static void JoinRoom_C(string text,Socket current)
+        private static void JoinRoom_C(string text, Socket current)
         {
             bool flag = false;
-                byte[] finaldata;
+            byte[] finaldata;
+            string[] input=text.Split(' ');
 
-                try
+            try
+            {
+                Room temproom;
+                int id = Int32.Parse(input[1]);
+                temproom = rooms.Find(x => x.id == id);
+                byte[] data0 = Encoding.ASCII.GetBytes("Valid input ID, searching for a room with this ID " + Environment.NewLine);
+                finaldata = data0;
+
+
+                if (temproom == null)
                 {
-                    Room temproom;
-                    int id = Int32.Parse(text.Split(' ')[1]);
-                    temproom = rooms.Find(x => x.id == id);
-                    byte[] data0 = Encoding.ASCII.GetBytes("Valid input ID, searching for a room with this ID " + Environment.NewLine);
-                    finaldata = data0;
+                    updateUI("1");
+                    byte[] data1 = Encoding.ASCII.GetBytes("There is no room with this id!");
+                    finaldata = data0.Concat(data1).ToArray();
 
+                }
+                else
+                {
+                    updateUI("2");
 
-                    if (temproom == null)
+                    foreach (User user in users)
                     {
-                        updateUI("1");
-                        byte[] data1 = Encoding.ASCII.GetBytes("There is no room with this id!");
-                        finaldata = data0.Concat(data1).ToArray();
+                        updateUI("3");
 
-                    }
-                    else
-                    {
-                        updateUI("2");
-
-                        foreach (User user in users)
+                        if (user.socket == current)
                         {
-                            updateUI("3");
+                            updateUI("4");
 
-                            if (user.socket == current)
+                            if (input.Count()>2)
                             {
-                                updateUI("4");
+                            updateUI("5");
+
+                                if (input[2] == "anon")
+                                {
+                            updateUI("6");
+
+                                    temproom.HiddenUsers.Add(user);
+                                    byte[] data3 = Encoding.ASCII.GetBytes("Room joined successful (anon)!");
+                                    finaldata = data0.Concat(data3).ToArray();
+                                }
+
+                            }
+                            else
+                            {
+                            updateUI("7");
 
                                 temproom.Users.Add(user);
                                 byte[] data2 = Encoding.ASCII.GetBytes("Room joined successful!");
                                 finaldata = data0.Concat(data2).ToArray();
 
-
-
                             }
+
+
+
+
                         }
-
                     }
-                }
-                catch (FormatException)
-                {
-                    updateUI("Try another ID");
-                    byte[] data3 = Encoding.ASCII.GetBytes("Wrong input ID!");
-                    finaldata = data3;
 
                 }
-                current.Send(finaldata);
+            }
+            catch (FormatException)
+            {
+                updateUI("Try another ID");
+                byte[] data3 = Encoding.ASCII.GetBytes("Wrong input ID!");
+                finaldata = data3;
+
+            }
+            current.Send(finaldata);
         }
-        private static void ListRooms_C(string text,Socket current)
+        private static void ListRooms_C(string text, Socket current)
         {
             if (rooms.Count == 0)
+            {
+                byte[] data = Encoding.ASCII.GetBytes("There are no avaiable rooms yet!");
+                current.Send(data);
+            }
+            else
+            {
+                foreach (Room room in rooms)
                 {
-                    byte[] data = Encoding.ASCII.GetBytes("There are no avaiable rooms yet!");
-                    current.Send(data);
-                }
-                else
-                {
-                    foreach (Room room in rooms)
-                    {
-                        byte[] data0 = Encoding.ASCII.GetBytes("Id: " + room.id + Environment.NewLine + "Name: " + room.name + Environment.NewLine + "Number of users: " + room.Users.Count() + Environment.NewLine);
-                        current.Send(data0);
+                    byte[] data0 = Encoding.ASCII.GetBytes("Id: " + room.id + Environment.NewLine + "Name: " + room.name + Environment.NewLine + "Number of users: " + room.Users.Count() + Environment.NewLine);
+                    current.Send(data0);
 
 
-                    }
                 }
+            }
         }
-        private static void Register_C(string text,Socket current)
+        private static void Register_C(string text, Socket current)
         {
-             bool flag = false;
-                string[] input = text.Split(' ');
-                if (input.Count() == 3 && text.Split(' ')[1] != "" && text.Split(' ')[2] != "")
+            bool flag = false;
+            string[] input = text.Split(' ');
+            if (input.Count() == 3 && text.Split(' ')[1] != "" && text.Split(' ')[2] != "")
+            {
+                if (users.Count != 0)
                 {
-                    if (users.Count != 0)
+                    foreach (User user1 in users)
                     {
-                        foreach (User user1 in users)
+                        if (text.Split(' ')[1] == user1.username)
                         {
-                            if (text.Split(' ')[1] == user1.username)
-                            {
-                                flag = true;
-                            }
+                            flag = true;
                         }
                     }
-                    if (flag == true)
-                    {
-                        byte[] data1 = Encoding.ASCII.GetBytes("This username is already taken, please change it");
-                        current.Send(data1);
-                    }
-                    else
-                    {
-                        updateUI("A user wants to register");
-                        User user = new User();
-                        user.username = text.Split(' ')[1];
-                        user.password = text.Split(' ')[2];
-                        user.socket = current;
-                        users.Add(user);
-                        byte[] data = Encoding.ASCII.GetBytes("Account created successfully! Welcome " + user.username + "! Please Log In now!");
-                        current.Send(data);
-                    }
-
+                }
+                if (flag == true)
+                {
+                    byte[] data1 = Encoding.ASCII.GetBytes("This username is already taken, please change it");
+                    current.Send(data1);
                 }
                 else
                 {
-                    byte[] data = Encoding.ASCII.GetBytes("There is a problem with the input provided. Please try again!");
+                    updateUI("A user wants to register");
+                    User user = new User();
+                    user.username = text.Split(' ')[1];
+                    user.password = text.Split(' ')[2];
+                    user.socket = current;
+                    users.Add(user);
+                    byte[] data = Encoding.ASCII.GetBytes("Account created successfully! Welcome " + user.username + "! Please Log In now!");
                     current.Send(data);
                 }
-        }
-        private static void GetTime_C(string text,Socket current)
-        {
-                updateUI("Text is a get time request");
-                byte[] data = Encoding.ASCII.GetBytes(DateTime.Now.ToLongTimeString());
+
+            }
+            else
+            {
+                byte[] data = Encoding.ASCII.GetBytes("There is a problem with the input provided. Please try again!");
                 current.Send(data);
-                updateUI("Time sent to client");
+            }
+        }
+        private static void GetTime_C(string text, Socket current)
+        {
+            updateUI("Text is a get time request");
+            byte[] data = Encoding.ASCII.GetBytes(DateTime.Now.ToLongTimeString());
+            current.Send(data);
+            updateUI("Time sent to client");
         }
         private static void Exit_C(string text, Socket current)
         {
             // Always Shutdown before closing
-                current.Shutdown(SocketShutdown.Both);
-                current.Close();
-                clientSockets.Remove(current);
-                updateUI("Client disconnected");
-               
+            current.Shutdown(SocketShutdown.Both);
+            current.Close();
+            clientSockets.Remove(current);
+            updateUI("Client disconnected");
+
         }
         private static void StartServer_S()
         {
             updateUI("Setting up server...");
-                serverSocket.Bind(new IPEndPoint(IPAddress.Any, PORT));
-                serverSocket.Listen(0);
-                serverSocket.BeginAccept(AcceptCallback, null);
-                updateUI("Server setup complete");
+            serverSocket.Bind(new IPEndPoint(IPAddress.Any, PORT));
+            serverSocket.Listen(0);
+            serverSocket.BeginAccept(AcceptCallback, null);
+            updateUI("Server setup complete");
         }
         private static void ListUsers_S()
         {
-             if (users.Count == 0)
+            if (users.Count == 0)
+            {
+                updateUI("There are no users yet!");
+            }
+            else
+            {
+                foreach (User user in users)
                 {
-                    updateUI("There are no users yet!");
-                }
-                else
-                {
-                    foreach (User user in users)
-                    {
 
-                        updateUI(user.username);
-                        updateUI(user.password);
-                        updateUI(user.loggedIn.ToString());
-                        updateUI("");
-                    }
+                    updateUI(user.username);
+                    updateUI(user.password);
+                    updateUI(user.loggedIn.ToString());
+                    updateUI("");
                 }
+            }
         }
         private static void ListRooms_S()
         {
             if (rooms.Count == 0)
+            {
+                updateUI("There are no rooms yet!");
+            }
+            else
+            {
+                foreach (Room room in rooms)
                 {
-                    updateUI("There are no rooms yet!");
-                }
-                else
-                {
-                    foreach (Room room in rooms)
-                    {
 
-                        updateUI("id " + room.id);
-                        updateUI("name " + room.name);
-                        updateUI("number of users " + room.Users.Count());
-                        updateUI("");
-                    }
+                    updateUI("id " + room.id);
+                    updateUI("name " + room.name);
+                    updateUI("number of users " + room.Users.Count());
+                    updateUI("");
                 }
+            }
         }
         private static void CreateRoom_S(string input)
         {
-             Room room = new Room();
-                try
+            Room room = new Room();
+            try
+            {
+                int id = Int32.Parse(input.ToLower().Split(' ')[1]);
+                if (rooms.Count > 0)
                 {
-                    int id = Int32.Parse(input.ToLower().Split(' ')[1]);
-                    if (rooms.Count > 0)
+                    foreach (Room tmproom in rooms)
                     {
-                        foreach (Room tmproom in rooms)
+                        if (tmproom.id == id)
                         {
-                            if (tmproom.id == id)
-                            {
-                                updateUI("A room with this id already exists! Try a different id!");
-                                return;
-                            }
+                            updateUI("A room with this id already exists! Try a different id!");
+                            return;
                         }
                     }
-                    room.id = id;
                 }
-                catch (FormatException)
-                {
-                    updateUI("Try another ID");
-                }
-                room.name = input.ToLower().Split(' ')[2];
-                rooms.Add(room);
-                updateUI("room " + room.name + " with id " + room.id + " was created!");
+                room.id = id;
+            }
+            catch (FormatException)
+            {
+                updateUI("Try another ID");
+            }
+            room.name = input.ToLower().Split(' ')[2];
+            rooms.Add(room);
+            updateUI("room " + room.name + " with id " + room.id + " was created!");
         }
-       
+
     }
     public class User
     {
@@ -472,5 +504,6 @@ namespace tcpServer
         public int id;
         public string name;
         public List<User> Users = new List<User>();
+        public List<User> HiddenUsers = new List<User>();
     }
 }
