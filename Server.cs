@@ -99,6 +99,10 @@ namespace tcpServer
             {
                 JoinRoom_C(text, current);
             }
+            else if (text.ToLower().StartsWith("/MSG"))
+            {
+                SendMessageRoom(text,current);
+            }
             else if (text.ToLower() == "/list_rooms")
             {
                 ListRooms_C(text, current);
@@ -416,6 +420,48 @@ namespace tcpServer
             current.Close();
             clientSockets.Remove(current);
             updateUI("Client disconnected");
+
+        }
+        private static void SendMessageRoom(string text, Socket current)
+        {
+            string[]  input =text.Split(' ');
+            try
+            {
+                int Roomid = Int32.Parse(input[1]);
+                Room roomtosend= rooms.Find(x=> x.id==Roomid);
+                if(roomtosend.Users.Exists(y=> y.socket == current))
+                {
+                    input.ToList().RemoveRange(0,2);
+                    User user = roomtosend.Users.Find(z=>z.socket==current);
+                    string result0= user.username.ToString();
+                    
+                    string result1=String.Concat(input);
+                    result0.Concat(result1);
+                    byte[] data0 = Encoding.ASCII.GetBytes(result0);
+                    foreach(User user_ in users)
+                    {
+                        user_.socket.Send(data0);
+                    }
+                    
+                }
+                else
+                {
+                    byte[] data1 = Encoding.ASCII.GetBytes("You are not inside this room!");
+                    current.Send(data1);
+                
+                }
+                //byte[] data3 = Encoding.ASCII.GetBytes("Wrong input ID!");
+                //finaldata = data3;
+
+            }
+            catch (Exception)
+            {
+
+                 updateUI("Try another ID");
+                byte[] data3 = Encoding.ASCII.GetBytes("Wrong input ID!");
+                current.Send(data3);
+            }
+
 
         }
         private static void StartServer_S()
