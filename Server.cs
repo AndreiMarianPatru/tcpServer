@@ -85,6 +85,7 @@ namespace tcpServer
             byte[] recBuf = new byte[received];
             Array.Copy(buffer, recBuf, received);
             string text = Encoding.ASCII.GetString(recBuf);
+            
             updateUI("Received Text: " + text);
 
             if (text.ToLower().StartsWith("/reg"))
@@ -99,10 +100,14 @@ namespace tcpServer
             {
                 JoinRoom_C(text, current);
             }
-            else if (text.ToLower().StartsWith("/MSG"))
+            else if (text.ToLower().StartsWith("/msg_w"))
+            {
+                SendMessageW(text, current);
+            }
+            else if (text.ToLower().StartsWith("/msg"))
             {
                 SendMessageRoom(text,current);
-            }
+            }       
             else if (text.ToLower() == "/list_rooms")
             {
                 ListRooms_C(text, current);
@@ -424,23 +429,25 @@ namespace tcpServer
         }
         private static void SendMessageRoom(string text, Socket current)
         {
-            string[]  input =text.Split(' ');
+            string[] input = text.Split(' ');
             try
             {
                 int Roomid = Int32.Parse(input[1]);
                 Room roomtosend= rooms.Find(x=> x.id==Roomid);
                 if(roomtosend.Users.Exists(y=> y.socket == current))
                 {
-                    input.ToList().RemoveRange(0,2);
+                    string[] input0=input.Skip(2).ToArray();
                     User user = roomtosend.Users.Find(z=>z.socket==current);
                     string result0= user.username.ToString();
-                    
-                    string result1=String.Concat(input);
-                    result0.Concat(result1);
-                    byte[] data0 = Encoding.ASCII.GetBytes(result0);
+
+                    string result1 = String.Join(" ", input0);
+                    string result2 = String.Join(": ", result0, result1);
+                    byte[] data0 = Encoding.ASCII.GetBytes(result2);
                     foreach(User user_ in users)
                     {
+                        
                         user_.socket.Send(data0);
+                       // user_.socket.BeginReceive(buffer, 0, BUFFER_SIZE, SocketFlags.None, ReceiveCallback, user_);
                     }
                     
                 }
@@ -460,7 +467,36 @@ namespace tcpServer
                  updateUI("Try another ID");
                 byte[] data3 = Encoding.ASCII.GetBytes("Wrong input ID!");
                 current.Send(data3);
+
             }
+
+
+        }
+        private static void SendMessageW(string text,Socket current)
+        {
+            string[] input = text.Split(' ');
+            string target = input[1];
+            string[] message0 = input.Skip(2).ToArray();
+            string message1 = String.Join(" ", message0);
+            if (users.Exists(x => x.username == target))
+            {
+                User receiver = users.Find(x => x.username == target);
+                User sender = users.Find(x => x.socket == current);
+                string finalmessage = String.Join(" ", sender.username, "said:", message1);
+                byte[] data0 = Encoding.ASCII.GetBytes(finalmessage);
+                receiver.socket.Send(data0);
+                byte[] data2 = Encoding.ASCII.GetBytes("Message successfully sent to "+receiver.username);
+                current.Send(data2);
+
+
+            }
+            else
+            {
+                byte[] data1 = Encoding.ASCII.GetBytes("The user you are trying to contact does not exist. Please try again!");
+                current.Send(data1);
+
+            }
+
 
 
         }
@@ -531,7 +567,12 @@ namespace tcpServer
             {
                 updateUI("Try another ID");
             }
-            room.name = input.ToLower().Split(' ')[2];
+            string[] stringlist = input.ToLower().Split(' ');
+            if (stringlist.Count()> 2)
+            {
+                room.name = stringlist[2];
+
+            }
             rooms.Add(room);
             updateUI("room " + room.name + " with id " + room.id + " was created!");
         }
