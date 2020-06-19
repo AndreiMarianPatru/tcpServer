@@ -32,6 +32,7 @@
             this.mConsole = new System.Windows.Forms.TextBox();
             this.bSend = new System.Windows.Forms.Button();
             this.bStartServer = new System.Windows.Forms.Button();
+            this.textBox1 = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // tchat
@@ -72,11 +73,24 @@
             this.bStartServer.UseVisualStyleBackColor = true;
             this.bStartServer.Click += new System.EventHandler(this.bStartServer_Click);
             // 
+            // textBox1
+            // 
+            this.textBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.textBox1.Location = new System.Drawing.Point(858, 202);
+            this.textBox1.Multiline = true;
+            this.textBox1.Name = "textBox1";
+            this.textBox1.ReadOnly = true;
+            this.textBox1.Size = new System.Drawing.Size(300, 109);
+            this.textBox1.TabIndex = 7;
+            this.textBox1.Text = "/start server\r\n/stop server\r\n/list users\r\n/list rooms\r\n/createroom <id(int)> <nam" +
+    "e(string)>\r\n";
+            // 
             // Server
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1200, 692);
+            this.Controls.Add(this.textBox1);
             this.Controls.Add(this.bStartServer);
             this.Controls.Add(this.bSend);
             this.Controls.Add(this.mConsole);
@@ -94,5 +108,6 @@
         private System.Windows.Forms.TextBox mConsole;
         private System.Windows.Forms.Button bSend;
         private System.Windows.Forms.Button bStartServer;
+        private System.Windows.Forms.TextBox textBox1;
     }
 }
